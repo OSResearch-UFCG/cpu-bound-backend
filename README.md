@@ -10,3 +10,5 @@ curl "http://localhost:8080/?n=50000"
 ```
 
 A porta pode ser trocada com a variável `PORT`.
+
+`WORKERS=N` sobe N processos aceitando no mesmo socket (padrão 1).

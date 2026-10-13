@@ -4,6 +4,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
 PORT = int(os.environ.get("PORT", "8080"))
+WORKERS = int(os.environ.get("WORKERS", "1"))
 DEFAULT_N = 50000
 
 
@@ -40,5 +41,12 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-print(f"cpu-bound-backend ouvindo na porta {PORT}")
-HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+server = HTTPServer(("0.0.0.0", PORT), Handler)
+print(f"cpu-bound-backend ouvindo na porta {PORT} com {WORKERS} worker(s)")
+
+# Cada worker é um processo (a GIL impede ganho com threads em código CPU-bound)
+# aceitando conexões no mesmo socket.
+for _ in range(WORKERS - 1):
+    if os.fork() == 0:
+        break
+server.serve_forever()
